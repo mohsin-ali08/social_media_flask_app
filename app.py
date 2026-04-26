@@ -72,44 +72,35 @@ def index():
 
 
 # ----------------------------------------
-# ROUTE 2: Users List (optimized - 1 query)
+# ROUTE 2: Users List (2 queries total)
 # ----------------------------------------
 @app.route("/users")
 def users():
-    # Single aggregation — 100 queries ki bajaye sirf 1
+    # Query 1: post count per user
     pipeline = [
-        {
-            "$lookup": {
-                "from": "posts",
-                "localField": "_id",
-                "foreignField": "user_id",
-                "as": "user_posts"
-            }
-        },
-        {
-            "$project": {
-                "username": 1,
-                "email": 1,
-                "bio": 1,
-                "joined_at": 1,
-                "post_count": {"$size": "$user_posts"}
-            }
-        },
-        {"$sort": {"post_count": -1}}
+        {"$group": {"_id": "$user_id", "post_count": {"$sum": 1}}}
     ]
+    post_counts = {
+        str(doc["_id"]): doc["post_count"]
+        for doc in posts_col.aggregate(pipeline)
+    }
 
-    all_users = list(users_col.aggregate(pipeline))
+    # Query 2: all users
+    all_users = list(users_col.find(
+        {}, {"username": 1, "email": 1, "bio": 1, "joined_at": 1}
+    ))
+
     users_data = []
-
     for user in all_users:
         users_data.append({
-            "username": user["username"],
-            "email": user["email"],
+            "username": user.get("username", ""),
+            "email": user.get("email", ""),
             "bio": user.get("bio", ""),
-            "post_count": user["post_count"],
+            "post_count": post_counts.get(str(user["_id"]), 0),
             "joined_at": user.get("joined_at", datetime.now()).strftime("%b %Y"),
         })
 
+    users_data.sort(key=lambda x: x["post_count"], reverse=True)
     return render_template("users.html", users=users_data)
 
 
