@@ -1,23 +1,24 @@
-from dotenv import load_dotenv
-import os
 import pymongo
 from faker import Faker
 import random
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import os
 
-# Connect MongoDB
 load_dotenv()
+
+# Connect MongoDB Atlas (same as app.py)
 MONGO_URI = os.getenv("MONGO_URI")
 client = pymongo.MongoClient(MONGO_URI)
-db = client["social-media"]
+db = client.get_default_database()
 
-users_col = db["users"]
-posts_col = db["posts"]
+# Collections
+users_collection = db["users"]
+posts_collection = db["posts"]
+
 # Clear old data (fresh start)
-users_col.drop()
-posts_col.drop()
-
-
+users_collection.drop()
+posts_collection.drop()
 
 fake = Faker()
 
@@ -27,26 +28,26 @@ fake = Faker()
 user_ids = []
 print("Inserting users...")
 
-for _ in range(10):
+for _ in range(100):
     user = {
         "username": fake.user_name(),
         "email": fake.email(),
         "password": "hashed_password",
-        "avatar": f"https://api.dicebear.com/7.x/avataaars/svg?seed={fake.user_name()}",
+        "avatar": "",
         "bio": fake.sentence(),
         "joined_at": datetime.now() - timedelta(days=random.randint(1, 365)),
     }
-    result = users_col.insert_one(user)
+    result = users_collection.insert_one(user)
     user_ids.append(result.inserted_id)
 
-print("✅ 10 users inserted")
+print("✅ 100 users inserted")
 
 # -----------------------------
 # STEP 2: Insert Posts
 # -----------------------------
 print("Inserting posts...")
 
-for _ in range(20):
+for _ in range(1000):
     post = {
         "user_id": random.choice(user_ids),
         "content": fake.text(),
@@ -63,7 +64,7 @@ for _ in range(20):
         }
         post["comments"].append(comment)
 
-    posts_col.insert_one(post)
+    posts_collection.insert_one(post)
 
-print("✅ 20 posts inserted")
+print("✅ 1000 posts inserted")
 print("\n🚀 Seeding complete! Now run: python app.py")

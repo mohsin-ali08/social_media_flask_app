@@ -10,24 +10,46 @@
     <p class="page-subtitle">Most liked in the last 24 hours</p>
   {% else %}
     <h1 class="page-title">Your Feed</h1>
-    <p class="page-subtitle">{{ total_posts }} posts total</p>
+    <p class="page-subtitle" id="post-count">
+      <span class="skeleton skeleton-text" style="width:120px;"></span>
+    </p>
   {% endif %}
 
   {% if not is_trending %}
-  <!-- SORT CONTROLS -->
   <div class="sort-bar">
     <span class="sort-label">Sort by:</span>
-    <a href="/?sort=recent" class="sort-btn {% if sort_by == 'recent' %}active{% endif %}">🕐 Recent</a>
-    <a href="/?sort=likes" class="sort-btn {% if sort_by == 'likes' %}active{% endif %}">❤️ Most Liked</a>
+    <a href="/feed?sort=recent" class="sort-btn {% if sort_by == 'recent' %}active{% endif %}">🕐 Recent</a>
+    <a href="/feed?sort=likes" class="sort-btn {% if sort_by == 'likes' %}active{% endif %}">❤️ Most Liked</a>
   </div>
   {% endif %}
 </div>
 
-<!-- POSTS GRID -->
-<div class="posts-grid">
+<!-- SKELETON LOADER -->
+<div class="posts-grid" id="skeleton-posts">
+  {% for i in range(5) %}
+  <div class="post-card skeleton-card">
+    <div class="post-header">
+      <div class="skeleton skeleton-post-avatar"></div>
+      <div style="flex:1;">
+        <div class="skeleton skeleton-text" style="width:40%;margin-bottom:6px;"></div>
+        <div class="skeleton skeleton-text" style="width:25%;height:10px;"></div>
+      </div>
+    </div>
+    <div class="skeleton skeleton-text" style="width:100%;margin-bottom:6px;"></div>
+    <div class="skeleton skeleton-text" style="width:90%;margin-bottom:6px;"></div>
+    <div class="skeleton skeleton-text" style="width:70%;margin-bottom:1rem;"></div>
+    <div style="display:flex;gap:1.25rem;padding-top:0.75rem;border-top:1px solid var(--border);">
+      <div class="skeleton skeleton-text" style="width:80px;height:12px;"></div>
+      <div class="skeleton skeleton-text" style="width:90px;height:12px;"></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- REAL POSTS -->
+<div class="posts-grid" id="real-posts" style="display:none;">
   {% for post in posts %}
   <div class="post-card" style="animation-delay: {{ loop.index0 * 0.05 }}s">
-    <!-- User Info -->
     <div class="post-header">
       <div class="post-avatar">{{ post.username[0] | upper }}</div>
       <div class="post-meta">
@@ -35,38 +57,39 @@
         <span class="post-time">{{ post.created_at }}</span>
       </div>
     </div>
-
-    <!-- Content -->
     <p class="post-content">{{ post.content }}</p>
-
-    <!-- Stats -->
     <div class="post-footer">
-      <span class="stat">
-        <span class="stat-icon">❤️</span>
-        {{ post.likes }} likes
-      </span>
-      <span class="stat">
-        <span class="stat-icon">💬</span>
-        {{ post.comment_count }} comments
-      </span>
+      <span class="stat"><span class="stat-icon">❤️</span>{{ post.likes }} likes</span>
+      <span class="stat"><span class="stat-icon">💬</span>{{ post.comment_count }} comments</span>
     </div>
   </div>
   {% endfor %}
 </div>
 
-<!-- PAGINATION (only on feed, not trending) -->
+<!-- PAGINATION -->
 {% if not is_trending and total_pages > 1 %}
-<div class="pagination">
+<div class="pagination" id="pagination" style="display:none;">
   {% if page > 1 %}
-    <a href="/?page={{ page - 1 }}&sort={{ sort_by }}" class="page-btn">← Prev</a>
+    <a href="/feed?page={{ page - 1 }}&sort={{ sort_by }}" class="page-btn">← Prev</a>
   {% endif %}
-
   <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
-
   {% if page < total_pages %}
-    <a href="/?page={{ page + 1 }}&sort={{ sort_by }}" class="page-btn">Next →</a>
+    <a href="/feed?page={{ page + 1 }}&sort={{ sort_by }}" class="page-btn">Next →</a>
   {% endif %}
 </div>
 {% endif %}
+
+<script>
+  window.addEventListener("load", () => {
+    document.getElementById("skeleton-posts").style.display = "none";
+    document.getElementById("real-posts").style.display = "flex";
+
+    const pagination = document.getElementById("pagination");
+    if (pagination) pagination.style.display = "flex";
+
+    const countEl = document.getElementById("post-count");
+    if (countEl) countEl.textContent = "{{ total_posts }} posts total";
+  });
+</script>
 
 {% endblock %}

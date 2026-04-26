@@ -403,3 +403,41 @@ a { text-decoration: none; color: inherit; }
   .page-title { font-size: 1.5rem; }
   .users-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ===========================
+   Skeleton Loader
+=========================== */
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.skeleton {
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    #2a2a3a 50%,
+    var(--surface-2) 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite linear;
+  display: block;
+}
+
+.skeleton-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  margin: 0 auto 0.75rem;
+}
+
+.skeleton-text {
+  height: 14px;
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
+}
+
+.skeleton-card {
+  pointer-events: none;
+}

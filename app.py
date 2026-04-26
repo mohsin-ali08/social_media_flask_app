@@ -1,32 +1,23 @@
 from dotenv import load_dotenv
 import os
-# import certifi
 from flask import Flask, render_template, request
 import pymongo
 from datetime import datetime, timedelta
 from bson import ObjectId
 
+load_dotenv()
 
-
-app = Flask(__name__, 
+app = Flask(__name__,
     static_folder='static',
     template_folder='templates'
 )
 
-load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
 client = pymongo.MongoClient(MONGO_URI)
-db = client["social-media"]
+db = client.get_default_database()
 
 users_col = db["users"]
 posts_col = db["posts"]
-
-def get_username(user_id):
-    """Helper: get username from user_id"""
-    user = users_col.find_one({"_id": ObjectId(user_id)})
-    if user:
-        return user.get("username", "Unknown")
-    return "Unknown"
 
 
 # ----------------------------------------
@@ -38,38 +29,35 @@ def landing():
 
 
 # ----------------------------------------
-# ROUTE 1: Home — Posts Feed
+# ROUTE 1: Posts Feed
 # ----------------------------------------
 @app.route("/feed")
 def index():
     page = int(request.args.get("page", 1))
     per_page = 10
     skip = (page - 1) * per_page
-
     sort_by = request.args.get("sort", "recent")
-
     sort_field = "created_at" if sort_by == "recent" else "likes"
-    sort_order = pymongo.DESCENDING
 
     total_posts = posts_col.count_documents({})
     posts_cursor = (
-        posts_col.find().sort(sort_field, sort_order).skip(skip).limit(per_page)
+        posts_col.find()
+        .sort(sort_field, pymongo.DESCENDING)
+        .skip(skip)
+        .limit(per_page)
     )
 
     posts = []
     for post in posts_cursor:
         user = users_col.find_one({"_id": post["user_id"]})
-        posts.append(
-            {
-                "id": str(post["_id"]),
-                "username": user["username"] if user else "Unknown",
-                "avatar": user.get("avatar", "") if user else "",
-                "content": post["content"],
-                "likes": post["likes"],
-                "comment_count": len(post.get("comments", [])),
-                "created_at": post["created_at"].strftime("%b %d, %Y %I:%M %p"),
-            }
-        )
+        posts.append({
+            "id": str(post["_id"]),
+            "username": user["username"] if user else "Unknown",
+            "content": post["content"],
+            "likes": post["likes"],
+            "comment_count": len(post.get("comments", [])),
+            "created_at": post["created_at"].strftime("%b %d, %Y %I:%M %p"),
+        })
 
     total_pages = (total_posts + per_page - 1) // per_page
 
@@ -84,34 +72,49 @@ def index():
 
 
 # ----------------------------------------
-# ROUTE 2: Users List
+# ROUTE 2: Users List (optimized - 1 query)
 # ----------------------------------------
 @app.route("/users")
 def users():
-    all_users = list(users_col.find())
+    # Single aggregation — 100 queries ki bajaye sirf 1
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "posts",
+                "localField": "_id",
+                "foreignField": "user_id",
+                "as": "user_posts"
+            }
+        },
+        {
+            "$project": {
+                "username": 1,
+                "email": 1,
+                "bio": 1,
+                "joined_at": 1,
+                "post_count": {"$size": "$user_posts"}
+            }
+        },
+        {"$sort": {"post_count": -1}}
+    ]
+
+    all_users = list(users_col.aggregate(pipeline))
     users_data = []
 
     for user in all_users:
-        post_count = posts_col.count_documents({"user_id": user["_id"]})
-        users_data.append(
-            {
-                "username": user["username"],
-                "email": user["email"],
-                "bio": user.get("bio", ""),
-                "avatar": user.get("avatar", ""),
-                "post_count": post_count,
-                "joined_at": user.get("joined_at", datetime.now()).strftime("%b %Y"),
-            }
-        )
-
-    # Sort by post count
-    users_data.sort(key=lambda x: x["post_count"], reverse=True)
+        users_data.append({
+            "username": user["username"],
+            "email": user["email"],
+            "bio": user.get("bio", ""),
+            "post_count": user["post_count"],
+            "joined_at": user.get("joined_at", datetime.now()).strftime("%b %Y"),
+        })
 
     return render_template("users.html", users=users_data)
 
 
 # ----------------------------------------
-# ROUTE 3: Top Posts (last 24 hours)
+# ROUTE 3: Trending (last 24 hours)
 # ----------------------------------------
 @app.route("/trending")
 def trending():
@@ -125,19 +128,17 @@ def trending():
     posts = []
     for post in top_posts:
         user = users_col.find_one({"_id": post["user_id"]})
-        posts.append(
-            {
-                "id": str(post["_id"]),
-                "username": user["username"] if user else "Unknown",
-                "avatar": user.get("avatar", "") if user else "",
-                "content": post["content"],
-                "likes": post["likes"],
-                "comment_count": len(post.get("comments", [])),
-                "created_at": post["created_at"].strftime("%b %d, %Y %I:%M %p"),
-            }
-        )
+        posts.append({
+            "id": str(post["_id"]),
+            "username": user["username"] if user else "Unknown",
+            "content": post["content"],
+            "likes": post["likes"],
+            "comment_count": len(post.get("comments", [])),
+            "created_at": post["created_at"].strftime("%b %d, %Y %I:%M %p"),
+        })
 
-    return render_template("index.html",
+    return render_template(
+        "index.html",
         posts=posts,
         page=1,
         total_pages=1,

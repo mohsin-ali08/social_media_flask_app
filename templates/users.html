@@ -5,28 +5,49 @@
 
 <div class="page-header">
   <h1 class="page-title">👥 All Users</h1>
-  <p class="page-subtitle">{{ users | length }} members · sorted by activity</p>
+  <p class="page-subtitle" id="user-count">
+    <span class="skeleton skeleton-text" style="width:160px;"></span>
+  </p>
 </div>
 
-<div class="users-grid">
+<!-- SKELETON LOADER (shows while page loads) -->
+<div class="users-grid" id="skeleton-grid">
+  {% for i in range(8) %}
+  <div class="user-card skeleton-card">
+    <div class="skeleton skeleton-avatar"></div>
+    <div class="skeleton skeleton-text" style="width:70%;margin:0.75rem auto 0.4rem;"></div>
+    <div class="skeleton skeleton-text" style="width:90%;margin:0 auto 0.4rem;"></div>
+    <div class="skeleton skeleton-text" style="width:80%;margin:0 auto 1rem;"></div>
+    <div style="display:flex;justify-content:center;gap:2rem;padding-top:0.85rem;border-top:1px solid var(--border);">
+      <div>
+        <div class="skeleton skeleton-text" style="width:40px;margin:0 auto 4px;"></div>
+        <div class="skeleton skeleton-text" style="width:30px;margin:0 auto;height:10px;"></div>
+      </div>
+      <div>
+        <div class="skeleton skeleton-text" style="width:50px;margin:0 auto 4px;"></div>
+        <div class="skeleton skeleton-text" style="width:30px;margin:0 auto;height:10px;"></div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- REAL DATA (hidden until JS reveals it) -->
+<div class="users-grid" id="real-grid" style="display:none;">
   {% for user in users %}
   <div class="user-card" style="animation-delay: {{ loop.index0 * 0.04 }}s">
-    <!-- Rank Badge -->
+
     {% if loop.index <= 3 %}
     <div class="rank-badge rank-{{ loop.index }}">
       {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% else %}🥉{% endif %}
     </div>
     {% endif %}
 
-    <!-- Avatar -->
     <div class="user-avatar">{{ user.username[0] | upper }}</div>
-
-    <!-- Info -->
     <h3 class="user-name">@{{ user.username }}</h3>
     <p class="user-email">{{ user.email }}</p>
     <p class="user-bio">{{ user.bio }}</p>
 
-    <!-- Stats -->
     <div class="user-stats">
       <div class="user-stat">
         <span class="user-stat-value">{{ user.post_count }}</span>
@@ -37,8 +58,19 @@
         <span class="user-stat-label">Joined</span>
       </div>
     </div>
+
   </div>
   {% endfor %}
 </div>
+
+<script>
+  // Jab page fully load ho tab skeleton hatao aur real data dikhao
+  window.addEventListener("load", () => {
+    document.getElementById("skeleton-grid").style.display = "none";
+    document.getElementById("real-grid").style.display = "grid";
+    document.getElementById("user-count").textContent =
+      "{{ users | length }} members · sorted by activity";
+  });
+</script>
 
 {% endblock %}
