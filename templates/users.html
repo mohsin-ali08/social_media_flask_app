@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Users — SocialFeed{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-title">👥 All Users</h1>
+  <p class="page-subtitle">{{ users | length }} members · sorted by activity</p>
+</div>
+
+<div class="users-grid">
+  {% for user in users %}
+  <div class="user-card" style="animation-delay: {{ loop.index0 * 0.04 }}s">
+    <!-- Rank Badge -->
+    {% if loop.index <= 3 %}
+    <div class="rank-badge rank-{{ loop.index }}">
+      {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% else %}🥉{% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Avatar -->
+    <div class="user-avatar">{{ user.username[0] | upper }}</div>
+
+    <!-- Info -->
+    <h3 class="user-name">@{{ user.username }}</h3>
+    <p class="user-email">{{ user.email }}</p>
+    <p class="user-bio">{{ user.bio }}</p>
+
+    <!-- Stats -->
+    <div class="user-stats">
+      <div class="user-stat">
+        <span class="user-stat-value">{{ user.post_count }}</span>
+        <span class="user-stat-label">Posts</span>
+      </div>
+      <div class="user-stat">
+        <span class="user-stat-value">{{ user.joined_at }}</span>
+        <span class="user-stat-label">Joined</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

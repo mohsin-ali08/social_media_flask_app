@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{% if is_trending %}🔥 Trending{% else %}Feed{% endif %} — SocialFeed{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  {% if is_trending %}
+    <h1 class="page-title">🔥 Trending Posts</h1>
+    <p class="page-subtitle">Most liked in the last 24 hours</p>
+  {% else %}
+    <h1 class="page-title">Your Feed</h1>
+    <p class="page-subtitle">{{ total_posts }} posts total</p>
+  {% endif %}
+
+  {% if not is_trending %}
+  <!-- SORT CONTROLS -->
+  <div class="sort-bar">
+    <span class="sort-label">Sort by:</span>
+    <a href="/?sort=recent" class="sort-btn {% if sort_by == 'recent' %}active{% endif %}">🕐 Recent</a>
+    <a href="/?sort=likes" class="sort-btn {% if sort_by == 'likes' %}active{% endif %}">❤️ Most Liked</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- POSTS GRID -->
+<div class="posts-grid">
+  {% for post in posts %}
+  <div class="post-card" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+    <!-- User Info -->
+    <div class="post-header">
+      <div class="post-avatar">{{ post.username[0] | upper }}</div>
+      <div class="post-meta">
+        <span class="post-username">@{{ post.username }}</span>
+        <span class="post-time">{{ post.created_at }}</span>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <p class="post-content">{{ post.content }}</p>
+
+    <!-- Stats -->
+    <div class="post-footer">
+      <span class="stat">
+        <span class="stat-icon">❤️</span>
+        {{ post.likes }} likes
+      </span>
+      <span class="stat">
+        <span class="stat-icon">💬</span>
+        {{ post.comment_count }} comments
+      </span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- PAGINATION (only on feed, not trending) -->
+{% if not is_trending and total_pages > 1 %}
+<div class="pagination">
+  {% if page > 1 %}
+    <a href="/?page={{ page - 1 }}&sort={{ sort_by }}" class="page-btn">← Prev</a>
+  {% endif %}
+
+  <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
+
+  {% if page < total_pages %}
+    <a href="/?page={{ page + 1 }}&sort={{ sort_by }}" class="page-btn">Next →</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

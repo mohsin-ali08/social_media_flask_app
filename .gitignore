@@ -1,0 +1,35 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment variables (IMPORTANT 🔐)
+.env
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Flask instance folder (if used)
+instance/
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+
+# Mongo / DB dumps (if any)
+*.dump
+*.bson

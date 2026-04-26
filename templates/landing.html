@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SocialFeed — Connect. Share. Explore.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0d10;
+      --surface: #16161c;
+      --surface-2: #1e1e28;
+      --border: #2a2a38;
+      --accent: #7c6aff;
+      --accent-2: #ff6a8e;
+      --text: #e8e8f0;
+      --text-muted: #888899;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAVBAR ── */
+   
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+
+
+    .btn-ghost {
+      padding: 0.45rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+    .btn-primary {
+      padding: 0.45rem 1.25rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 7rem 1.5rem 4rem;
+      overflow: hidden;
+    }
+
+    /* Glow blobs */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .blob-1 {
+      width: 500px; height: 500px;
+      background: var(--accent);
+      top: -100px; left: -100px;
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+    .blob-2 {
+      width: 400px; height: 400px;
+      background: var(--accent-2);
+      bottom: -80px; right: -80px;
+      animation: drift 13s ease-in-out infinite alternate-reverse;
+    }
+    .blob-3 {
+      width: 300px; height: 300px;
+      background: var(--accent);
+      top: 50%; left: 60%;
+      animation: drift 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(40px, 30px) scale(1.1); }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(124,106,255,0.4);
+      background: rgba(124,106,255,0.08);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 1.75rem;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1.5s ease infinite; }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      color: var(--text);
+      max-width: 800px;
+      animation: fadeDown 0.6s 0.1s ease both;
+    }
+
+    .hero-title .grad {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.7;
+      animation: fadeDown 0.6s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeDown 0.6s 0.3s ease both;
+    }
+
+    .btn-lg {
+      padding: 0.85rem 2rem;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .btn-outline-lg {
+      padding: 0.85rem 2rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .btn-outline-lg:hover { border-color: var(--accent); color: var(--text); }
+
+    /* Stats row */
+    .hero-stats {
+      display: flex;
+      gap: 3rem;
+      margin-top: 4rem;
+      animation: fadeDown 0.6s 0.4s ease both;
+    }
+
+    .stat-item { text-align: center; }
+
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-lbl {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── MOCK FEED PREVIEW ── */
+    .feed-preview {
+      margin-top: 5rem;
+      width: 100%;
+      max-width: 560px;
+      position: relative;
+      animation: fadeUp 0.8s 0.5s ease both;
+    }
+
+    .mock-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 0.85rem;
+      text-align: left;
+    }
+
+    .mock-card:first-child { transform: rotate(-1.5deg); }
+    .mock-card:last-child  { transform: rotate(0.8deg); }
+
+    .mock-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.7rem; }
+
+    .mock-av {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; color: #fff;
+      flex-shrink: 0;
+    }
+
+    .mock-name { font-weight: 600; font-size: 0.88rem; color: var(--accent); }
+    .mock-time { font-size: 0.75rem; color: var(--text-muted); }
+    .mock-text { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+
+    .mock-footer {
+      display: flex; gap: 1rem; margin-top: 0.75rem;
+      padding-top: 0.65rem; border-top: 1px solid var(--border);
+      font-size: 0.8rem; color: var(--text-muted);
+    }
+
+    /* ── FEATURES ── */
+    .features {
+      padding: 6rem 1.5rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      text-align: center;
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 3.5rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem 1.75rem;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(124,106,255,0.15);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .feature-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      margin: 0 1.5rem 6rem;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 4rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(124,106,255,0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 1rem;
+    }
+
+    .cta-sub {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      nav { padding: 0 1.25rem; }
+      .hero-stats { gap: 1.75rem; }
+      .hero-title { letter-spacing: -1px; }
+      .feed-preview { padding: 0 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="/" class="nav-logo">⚡ SocialFeed</a>
+    <div class="nav-links">
+      <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
+        🏠 Home
+      </a>
+      <a href="/feed" class="nav-link {% if request.path == '/feed' %}active{% endif %}">
+        🏠 Posts
+      </a>
+      <a href="/trending" class="nav-link {% if request.path == '/trending' %}active{% endif %}">
+        🔥 Trending
+      </a>
+      <a href="/users" class="nav-link {% if request.path == '/users' %}active{% endif %}">
+        👥 Users
+      </a>
+    </div>
+  </nav>
+<!-- HERO -->
+<section class="hero">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="hero-badge">
+    <span></span> Live Feed · 1000 Posts · 100 Users
+  </div>
+
+  <h1 class="hero-title">
+    Where Stories<br><span class="grad">Come Alive</span>
+  </h1>
+
+  <p class="hero-sub">
+    Explore real-time posts, discover trending content, and connect with people who share your world.
+  </p>
+
+  <div class="hero-actions">
+    <a href="/" class="btn-primary btn-lg"> Browse Feed</a>
+    <a href="/trending" class="btn-outline-lg">🔥 See Trending</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">1K+</div>
+      <div class="stat-lbl">Posts</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">100</div>
+      <div class="stat-lbl">Users</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">24h</div>
+      <div class="stat-lbl">Trending</div>
+    </div>
+  </div>
+
+  <!-- Mock Feed Cards -->
+  <div class="feed-preview">
+    <div class="mock-card">
+      <div class="mock-header">
+        <div class="mock-av">A</div>
+        <div>
+          <div class="mock-name">@alex_writes</div>
+          <div class="mock-time">2 minutes ago</div>
+        </div>
+      </div>
+      <p class="mock-text">Just discovered something incredible today — the world never stops surprising you if you pay attention. 🌍</p>
+      <div class="mock-footer">
+        <span>❤️ 342 likes</span>
+        <span>💬 18 comments</span>
+      </div>
+    </div>
+
+    <div class="mock-card">
+      <div class="mock-header">
+        <div class="mock-av" style="background: linear-gradient(135deg,#ff6a8e,#ffb347)">S</div>
+        <div>
+          <div class="mock-name">@sara_v</div>
+          <div class="mock-time">15 minutes ago</div>
+        </div>
+      </div>
+      <p class="mock-text">Hot take: the best ideas always come right before you fall asleep. My notes app is chaos. 😅</p>
+      <div class="mock-footer">
+        <span>❤️ 198 likes</span>
+        <span>💬 41 comments</span>
+      </div>
+    </div>
+
+    <div class="mock-card">
+      <div class="mock-header">
+        <div class="mock-av" style="background: linear-gradient(135deg,#06d6a0,#118ab2)">M</div>
+        <div>
+          <div class="mock-name">@mike_m</div>
+          <div class="mock-time">1 hour ago</div>
+        </div>
+      </div>
+      <p class="mock-text">Weekend mood: coffee, code, and zero notifications. Pure productivity.</p>
+      <div class="mock-footer">
+        <span>❤️ 477 likes</span>
+        <span>💬 9 comments</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="section-label">Why SocialFeed</div>
+  <h2 class="section-title">Everything in one place</h2>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon"></div>
+      <div class="feature-title">Live Feed</div>
+      <p class="feature-desc">Browse all posts sorted by time or popularity. Paginated for speed — no lag, no crash.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔥</div>
+      <div class="feature-title">Trending Now</div>
+      <p class="feature-desc">See the most liked posts from the last 24 hours. Updated in real-time via MongoDB aggregation.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">👥</div>
+      <div class="feature-title">User Profiles</div>
+      <p class="feature-desc">Explore all 100 users ranked by their activity. See post counts, bios, and join dates.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <div class="feature-title">Comments</div>
+      <p class="feature-desc">Every post has threaded comments from real community members. Conversations that matter.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-title">Fast & Lightweight</div>
+      <p class="feature-desc">No external APIs. No image bloat. Pure Flask + MongoDB — loads instantly every time.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🗂️</div>
+      <div class="feature-title">Smart Sorting</div>
+      <p class="feature-desc">Sort your feed by most recent or most liked. Filter the way you want to explore.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2 class="cta-title">Ready to explore?</h2>
+  <p class="cta-sub">Jump into the feed and see what's happening right now.</p>
+  <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+    <a href="/" class="btn-primary btn-lg"> Open Feed</a>
+    <a href="/trending" class="btn-outline-lg btn-lg">🔥 Trending Posts</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  Built with ❤️ using Flask + MongoDB + Python
+</footer>
+
+</body>
+</html>
