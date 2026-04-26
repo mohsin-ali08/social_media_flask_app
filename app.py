@@ -1,17 +1,22 @@
 from dotenv import load_dotenv
 import os
+# import certifi
 from flask import Flask, render_template, request
 import pymongo
 from datetime import datetime, timedelta
 from bson import ObjectId
-from wsgi import app 
 
-app = Flask(__name__)
+
+
+app = Flask(__name__, 
+    static_folder='static',
+    template_folder='templates'
+)
 
 load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
 client = pymongo.MongoClient(MONGO_URI)
-db = client.get_default_database()
+db = client["social-media"]
 
 users_col = db["users"]
 posts_col = db["posts"]
@@ -142,5 +147,5 @@ def trending():
     )
 
 
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)

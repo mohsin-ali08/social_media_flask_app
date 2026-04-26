@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
 client = pymongo.MongoClient(MONGO_URI)
-db = client.get_default_database()
+db = client["social-media"]
 
 users_col = db["users"]
 posts_col = db["posts"]
@@ -27,7 +27,7 @@ fake = Faker()
 user_ids = []
 print("Inserting users...")
 
-for _ in range(100):
+for _ in range(10):
     user = {
         "username": fake.user_name(),
         "email": fake.email(),
@@ -39,14 +39,14 @@ for _ in range(100):
     result = users_col.insert_one(user)
     user_ids.append(result.inserted_id)
 
-print("✅ 100 users inserted")
+print("✅ 10 users inserted")
 
 # -----------------------------
 # STEP 2: Insert Posts
 # -----------------------------
 print("Inserting posts...")
 
-for _ in range(1000):
+for _ in range(20):
     post = {
         "user_id": random.choice(user_ids),
         "content": fake.text(),
@@ -65,5 +65,5 @@ for _ in range(1000):
 
     posts_col.insert_one(post)
 
-print("✅ 1000 posts inserted")
+print("✅ 20 posts inserted")
 print("\n🚀 Seeding complete! Now run: python app.py")
